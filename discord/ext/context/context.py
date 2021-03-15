@@ -29,14 +29,14 @@ class EventContext:
     """Holder and manager for all context values originating from triggered discord.py events."""
 
     hooks: t.Dict[str, t.Callable] = dict()
-    _instance = None
+    ctx = None
 
     def __new__(cls, *args, **kwds):
         """Set the class to act as a singleton."""
-        if cls._instance is not None:
-            return cls._instance
-        cls._instance = object.__new__(cls)
-        return cls._instance
+        if cls.ctx is not None:
+            return cls.ctx
+        cls.ctx = object.__new__(cls)
+        return cls.ctx
 
     def __repr__(self):
         """A representative view of the current context."""
