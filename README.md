@@ -97,7 +97,7 @@ async def show_name():
         await ctx.channel.send(f"{ctx.user.display_name}")
 ```
 
-## `ctx.ephemeral(*, message=None, emoji=None, user=None, channel=None, guild=None)`
+### `ctx.ephemeral(*, message=None, emoji=None, user=None, channel=None, guild=None)`
 Context manager for overriding context values. On leaving the context manager's scope, `ctx` will revert to original state.
 
 ### Examples
