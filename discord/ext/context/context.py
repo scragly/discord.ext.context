@@ -171,7 +171,7 @@ class EventContext:
         """Sets the event value and runs the event hook if one is registered."""
         hook = self.set_event(event_name)
         if hook:
-            hook(*args)
+            hook(self, *args)
 
     @staticmethod
     def register_hook(event: str):
