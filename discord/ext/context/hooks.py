@@ -2,7 +2,6 @@ from discord.ext import commands
 
 from .context import EventContext
 from .types import MemberUser
-from .utils import ensure_member
 
 
 __all__ = (
@@ -18,7 +17,7 @@ __all__ = (
 def message_hook(ctx: EventContext, message: discord.Message, *_args):
     ctx.set(
         message=discord.PartialMessage(channel=message.channel, id=message.id),
-        user=ensure_member(message.author),
+        user=ctx.ensure_member(message.author),
         channel=message.channel,
         guild=message.guild,
     )
@@ -30,7 +29,7 @@ def raw_message_hook(ctx: EventContext, payload: discord.RawMessageDeleteEvent):
     if payload.cached_message:
         channel = payload.cached_message.channel
         guild = payload.cached_message.guild
-        user = ensure_member(payload.cached_message.author, guild=guild)
+        user = ctx.ensure_member(payload.cached_message.author, guild=guild)
     else:
         channel = ctx.client.get_channel(payload.channel_id)
         user = None
@@ -48,7 +47,7 @@ def raw_message_hook(ctx: EventContext, payload: discord.RawMessageDeleteEvent):
 def typing_hook(ctx: EventContext, channel: discord.abc.Messageable, user: MemberUser, _when: datetime.datetime):
     ctx.set(
         channel=channel,
-        user=ensure_member(user),
+        user=ctx.ensure_member(user),
         guild=getattr(channel, "guild", None),
     )
 
@@ -58,7 +57,7 @@ def typing_hook(ctx: EventContext, channel: discord.abc.Messageable, user: Membe
 def reaction_hook(ctx: EventContext, reaction: discord.Reaction, user: discord.User):
     ctx.set(
         message=discord.PartialMessage(channel=reaction.message.channel, id=reaction.message.id),
-        user=ensure_member(user),
+        user=ctx.ensure_member(user),
         channel=reaction.message.channel,
         guild=reaction.message.guild,
     )
@@ -70,7 +69,7 @@ def raw_reaction_hook(ctx: EventContext, payload: discord.RawReactionActionEvent
     channel = ctx.client.get_channel(payload.channel_id)
     ctx.set(
         message=discord.PartialMessage(channel=channel, id=payload.message_id),
-        user=ensure_member(payload.user_id, guild_id=payload.guild_id),
+        user=ctx.ensure_member(payload.user_id, guild_id=payload.guild_id),
         channel=channel,
         guild=ctx.client.get_guild(payload.guild_id) if payload.guild_id else None,
     )

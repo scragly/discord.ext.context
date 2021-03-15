@@ -9,7 +9,6 @@ import discord
 from discord.ext import commands
 
 from .types import MemberUser, Emoji
-from .utils import ensure_member
 
 _ctx_message: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("message")
 _ctx_emoji: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("emoji")
@@ -199,7 +198,7 @@ class EventContext:
         if not self.emoji:
             tokens[_ctx_emoji] = _ctx_emoji.set(emoji)
         if not self.user:
-            tokens[_ctx_user] = _ctx_user.set(ensure_member(user))
+            tokens[_ctx_user] = _ctx_user.set(self.ensure_member(user, guild=guild or self.guild))
         if not self.channel:
             tokens[_ctx_channel] = _ctx_channel.set(channel)
         if not self.guild:
@@ -227,7 +226,7 @@ class EventContext:
         if emoji:
             tokens[_ctx_emoji] = _ctx_emoji.set(message)
         if user:
-            tokens[_ctx_user] = _ctx_user.set(ensure_member(user))
+            tokens[_ctx_user] = _ctx_user.set(self.ensure_member(user, guild=guild or self.guild))
         if channel:
             tokens[_ctx_channel] = _ctx_channel.set(channel)
         if guild:
@@ -237,3 +236,25 @@ class EventContext:
         finally:
             for ctx, token in tokens.items():
                 ctx.reset(token)
+
+    def get_member_instances(self, user: discord.User):
+        return [guild.get_member(user.id) for guild in self.bot.guilds if guild.get_member(user.id)]
+
+    def ensure_member(self, user, *, guild: discord.Guild = None) -> t.Optional[MemberUser]:
+        if isinstance(user, discord.Member):
+            return user
+
+        if isinstance(user, int):
+            user: discord.User = self.bot.get_user(user)
+            if not user:
+                return None
+
+        if guild:
+            member = guild.get_member(user.id)
+            return member or user
+
+        member_instances = self.get_member_instances(user)
+        if len(member_instances) == 1:
+            return member_instances[0]
+
+        return user
