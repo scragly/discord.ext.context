@@ -12,7 +12,7 @@ from .types import MemberUser, Emoji
 
 _ctx_message: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("message")
 _ctx_emoji: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("emoji")
-_ctx_user: ContextVar[t.Optional[MemberUser]] = ContextVar("user", default=None)
+_ctx_user: ContextVar[t.Optional[MemberUser]] = ContextVar("user")
 _ctx_channel: ContextVar[t.Optional[discord.abc.Messageable]] = ContextVar("channel")
 _ctx_guild: ContextVar[t.Optional[discord.Guild]] = ContextVar("guild")
 _ctx_cmd: ContextVar[t.Optional[commands.Context]] = ContextVar("cmd_ctx")
@@ -22,6 +22,10 @@ _ctx_client: ContextVar[t.Optional[discord.Client]] = ContextVar("client")
 
 class ContextNotSet(Exception):
     """Raised when an EventContext value was accessed before it was set."""
+    pass
+
+
+class _NoValue:
     pass
 
 
@@ -41,20 +45,21 @@ class EventContext:
     def __repr__(self):
         """A representative view of the current context."""
         ctx_previews = []
-        if self.event:
-            ctx_previews.append(f"event='{self.event}'")
-        if self.message:
-            ctx_previews.append(f"message={self.message.id}")
-        if self.emoji:
-            ctx_previews.append(f"message='{self.emoji.name}'")
-        if self.user:
-            ctx_previews.append(f"user='{self.user}'")
-        if self.channel:
-            ctx_previews.append(f"channel='{self.channel}'")
-        if self.guild:
-            ctx_previews.append(f"guild='{self.guild}'")
-        if self.cmd_ctx:
-            ctx_previews.append(f"command='{self.cmd_ctx.command}'")
+        with self.default(None):
+            if self.event:
+                ctx_previews.append(f"event='{self.event}'")
+            if self.message:
+                ctx_previews.append(f"message={self.message.id}")
+            if self.emoji:
+                ctx_previews.append(f"emoji='{self.emoji.name}'")
+            if self.user:
+                ctx_previews.append(f"user='{self.user}'")
+            if self.channel:
+                ctx_previews.append(f"channel='{self.channel}'")
+            if self.guild:
+                ctx_previews.append(f"guild='{self.guild}'")
+            if self.cmd_ctx:
+                ctx_previews.append(f"command='{self.cmd_ctx.command}'")
 
         output = ", ".join(ctx_previews)
         return f"<EventContext {output}>"
@@ -65,7 +70,8 @@ class EventContext:
         try:
             return _ctx_message.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.message`.")
 
     @property
     def emoji(self) -> t.Optional[Emoji]:
@@ -73,7 +79,8 @@ class EventContext:
         try:
             return _ctx_emoji.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.emoji`.")
 
     @property
     def user(self) -> t.Optional[MemberUser]:
@@ -81,7 +88,8 @@ class EventContext:
         try:
             return _ctx_user.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.user`.")
 
     @property
     def channel(self) -> t.Optional[discord.abc.Messageable]:
@@ -89,7 +97,8 @@ class EventContext:
         try:
             return _ctx_channel.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.channel`.")
 
     @property
     def guild(self) -> t.Optional[discord.Guild]:
@@ -97,7 +106,8 @@ class EventContext:
         try:
             return _ctx_guild.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.guild`.")
 
     @property
     def cmd_ctx(self) -> t.Optional[commands.Context]:
@@ -105,7 +115,8 @@ class EventContext:
         try:
             return _ctx_cmd.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"Only 'command' events will set the `ctx.cmd_ctx` value, not '{self.event}' event.")
 
     @property
     def event(self) -> t.Optional[str]:
@@ -113,7 +124,8 @@ class EventContext:
         try:
             return _ctx_event.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"EventContext has no origin event in the current call stack.")
 
     @property
     def client(self) -> t.Optional[discord.Client]:
@@ -121,7 +133,8 @@ class EventContext:
         try:
             return _ctx_client.get()
         except KeyError:
-            raise ContextNotSet
+            with self.default(None):
+                raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.client`.")
 
     @property
     def bot(self) -> t.Optional[discord.Client]:
@@ -156,7 +169,7 @@ class EventContext:
         _ctx_client.set(client)
         return self
 
-    def set_cmd_ctx(self, cmd_ctx: commands.Context = None):
+    def set_cmd_ctx(self, cmd_ctx: commands.Context):
         """Set the command context for the event context."""
         _ctx_cmd.set(cmd_ctx)
         self.set(
@@ -182,27 +195,39 @@ class EventContext:
         return decorator
 
     @contextmanager
-    def fallback(
+    def default(
         self,
+        all_default: t.Any = _NoValue,
         *,
-        message: discord.PartialMessage = None,
-        emoji: Emoji = None,
-        user: MemberUser = None,
-        channel: discord.abc.Messageable = None,
-        guild: discord.Guild = None,
+        message: discord.PartialMessage = _NoValue,
+        emoji: Emoji = _NoValue,
+        user: MemberUser = _NoValue,
+        channel: discord.abc.Messageable = _NoValue,
+        guild: discord.Guild = _NoValue,
+        cmd_ext: commands.Context = _NoValue,
     ):
         """Sets the given context values if isn't already set."""
         tokens = dict()
-        if not self.message:
-            tokens[_ctx_message] = _ctx_message.set(message)
-        if not self.emoji:
-            tokens[_ctx_emoji] = _ctx_emoji.set(emoji)
-        if not self.user:
-            tokens[_ctx_user] = _ctx_user.set(self.ensure_member(user, guild=guild or self.guild))
-        if not self.channel:
-            tokens[_ctx_channel] = _ctx_channel.set(channel)
-        if not self.guild:
-            tokens[_ctx_guild] = _ctx_guild.set(guild)
+
+        message_default = message if message is not _NoValue else all_default
+        emoji_default = emoji if emoji is not _NoValue else all_default
+        user_default = user if user is not _NoValue else all_default
+        channel_default = channel if channel is not _NoValue else all_default
+        guild_default = guild if guild is not _NoValue else all_default
+        cmd_ext_default = cmd_ext if cmd_ext is not _NoValue else all_default
+
+        if (message_default is not _NoValue) and (_ctx_message.get(_NoValue) is not _NoValue):
+            tokens[_ctx_message] = _ctx_message.set(message_default)
+        if (emoji_default is not _NoValue) and (_ctx_emoji.get(_NoValue) is not _NoValue):
+            tokens[_ctx_emoji] = _ctx_emoji.set(emoji_default)
+        if (user_default is not _NoValue) and (_ctx_user.get(_NoValue) is not _NoValue):
+            tokens[_ctx_user] = _ctx_user.set(self.ensure_member(user_default, guild=guild or self.guild))
+        if (channel_default is not _NoValue) and (_ctx_channel.get(_NoValue) is not _NoValue):
+            tokens[_ctx_channel] = _ctx_channel.set(channel_default)
+        if (guild_default is not _NoValue) and (_ctx_guild.get(_NoValue) is not _NoValue):
+            tokens[_ctx_guild] = _ctx_guild.set(guild_default)
+        if (cmd_ext_default is not _NoValue) and (_ctx_cmd.get(_NoValue) is not _NoValue):
+            tokens[_ctx_cmd] = _ctx_cmd.set(guild_default)
         try:
             yield
         finally:
@@ -213,24 +238,27 @@ class EventContext:
     def ephemeral(
         self,
         *,
-        message: discord.PartialMessage = None,
-        emoji: Emoji = None,
-        user: MemberUser = None,
-        channel: discord.abc.Messageable = None,
-        guild: discord.Guild = None
+        message: discord.PartialMessage = _NoValue,
+        emoji: Emoji = _NoValue,
+        user: MemberUser = _NoValue,
+        channel: discord.abc.Messageable = _NoValue,
+        guild: discord.Guild = _NoValue,
+        cmd_ext: commands.Context = _NoValue,
     ):
         """Sets the given context values, overriding existing values."""
         tokens = dict()
-        if message:
+        if message is not _NoValue:
             tokens[_ctx_message] = _ctx_message.set(message)
-        if emoji:
+        if emoji is not _NoValue:
             tokens[_ctx_emoji] = _ctx_emoji.set(message)
-        if user:
+        if user is not _NoValue:
             tokens[_ctx_user] = _ctx_user.set(self.ensure_member(user, guild=guild or self.guild))
-        if channel:
+        if channel is not _NoValue:
             tokens[_ctx_channel] = _ctx_channel.set(channel)
-        if guild:
+        if guild is not _NoValue:
             tokens[_ctx_guild] = _ctx_guild.set(guild)
+        if cmd_ext is not _NoValue:
+            tokens[_ctx_cmd] = _ctx_cmd.set(cmd_ext)
         try:
             yield
         finally:
