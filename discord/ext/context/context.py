@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 _ctx_message: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("message")
-_ctx_emoji: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("emoji")
+_ctx_emoji: ContextVar[t.Optional[Emoji]] = ContextVar("emoji")
 _ctx_user: ContextVar[t.Optional[MemberUser]] = ContextVar("user")
 _ctx_channel: ContextVar[t.Optional[discord.abc.Messageable]] = ContextVar("channel")
 _ctx_guild: ContextVar[t.Optional[discord.Guild]] = ContextVar("guild")
