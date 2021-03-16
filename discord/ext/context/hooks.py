@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from datetime import datetime
+
 import discord
 from discord.ext import commands
 
@@ -45,7 +49,7 @@ def raw_message_hook(ctx: EventContext, payload: discord.RawMessageDeleteEvent):
 
 
 @EventContext.register_hook("typing")
-def typing_hook(ctx: EventContext, channel: discord.abc.Messageable, user: MemberUser, _when: datetime.datetime):
+def typing_hook(ctx: EventContext, channel: discord.abc.Messageable, user: MemberUser, _when: datetime):
     ctx.set(
         channel=channel,
         user=ctx.ensure_member(user),
@@ -68,11 +72,12 @@ def reaction_hook(ctx: EventContext, reaction: discord.Reaction, user: discord.U
 @EventContext.register_hook("raw_reaction_remove")
 def raw_reaction_hook(ctx: EventContext, payload: discord.RawReactionActionEvent):
     channel = ctx.client.get_channel(payload.channel_id)
+    guild = ctx.client.get_guild(payload.guild_id) if payload.guild_id else None
     ctx.set(
         message=discord.PartialMessage(channel=channel, id=payload.message_id),
-        user=ctx.ensure_member(payload.user_id, guild_id=payload.guild_id),
+        user=ctx.ensure_member(payload.user_id, guild=guild),
         channel=channel,
-        guild=ctx.client.get_guild(payload.guild_id) if payload.guild_id else None,
+        guild=guild,
     )
 
 
