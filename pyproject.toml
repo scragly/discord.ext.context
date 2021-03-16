@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "discord.ext.context"
-version = "0.1.3"
+version = "0.1.4"
 description = "Globally accessable context for discord.py events."
 authors = ["scragly <29337040+scragly@users.noreply.github.com>"]
 license = "MIT"
