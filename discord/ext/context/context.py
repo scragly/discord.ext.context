@@ -285,6 +285,8 @@ class EventContext:
         return [guild.get_member(user.id) for guild in self.bot.guilds if guild.get_member(user.id)]
 
     def ensure_member(self, user, *, guild: discord.Guild = None) -> t.Optional[MemberUser]:
+        if user is _NoValue or user is None:
+            return user
         if isinstance(user, discord.Member):
             return user
 
@@ -292,6 +294,9 @@ class EventContext:
             user: discord.User = self.bot.get_user(user)
             if not user:
                 return None
+
+        if guild is _NoValue:
+            guild = None
 
         if guild:
             member = guild.get_member(user.id)
