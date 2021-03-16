@@ -76,12 +76,20 @@ Sets the values for the current context to be used across future call stacks. Wo
 ### `@ctx.register_hook(event)`
 Decorator for registering an event to be handled by the decorated function. Will override existing hooks if a duplicate exists.
 
-### `ctx.fallback(*, message=None, emoji=None, user=None, channel=None, guild=None)`
-Context manager for registering context values to be used in the case they're not already set. On leaving the context manager's scope, `ctx` will revert to original state.
+### `ctx.default(all_default, *, message=_NoValue, emoji=_NoValue, user=_NoValue, channel=_NoValue, guild=_NoValue, cmd_ext=_NoValue)`
+Context manager for registering default values to be used if a value isn't set. On leaving the context manager's scope, `ctx` will revert to original state.
+
+Use `all_default` to set all the available ctx.values to the one value. This can be useful for allowing None to be returned for nonset contexts.
 
 #### Examples
 ```python
-with ctx.fallback(channel=fallback_channel, user=None):
+with ctx.default(None):
+    if ctx.channel:
+        await ctx.channel.send("Yes")
+```
+
+```python
+with ctx.default(channel=fallback_channel, user=None):
     if ctx.user:
         await ctx.channel.send(f"{ctx.user.display_name}")
 ```
@@ -91,13 +99,13 @@ If `ctx.channel` or `ctx.user` is not yet set, it'll be assigned the fallback ar
 It can also be used as a decorator for a function.
 
 ```python
-@ctx.fallback(channel=fallback_channel, user=None)
+@ctx.default(channel=fallback_channel, user=None)
 async def show_name():
     if ctx.user:
         await ctx.channel.send(f"{ctx.user.display_name}")
 ```
 
-### `ctx.ephemeral(*, message=None, emoji=None, user=None, channel=None, guild=None)`
+### `ctx.ephemeral(*, message=_NoValue, emoji=_NoValue, user=_NoValue, channel=_NoValue, guild=_NoValue, cmd_ext=_NoValue)`
 Context manager for overriding context values. On leaving the context manager's scope, `ctx` will revert to original state.
 
 ### Examples
