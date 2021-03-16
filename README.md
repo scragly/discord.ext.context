@@ -4,8 +4,16 @@ A globally accessible context object for discord.py events.
 
 Able to be used in both base clients and the commands extension.
 
+## Installation
+```shell
+pip install discord.ext.context
+```
 
-## Register a bot/client
+## Requirements
+- Python 3.7+
+- [discord.py 1.6+](https://pypi.org/project/discord.py/)
+
+## Register a Discord bot/client
 
 Subclass the `context.ContextClient` base class, ensuring that it's first in inheritance order.
 
