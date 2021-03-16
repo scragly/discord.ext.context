@@ -148,19 +148,24 @@ class EventContext:
     def set(
         self,
         *,
-        message: discord.PartialMessage = None,
-        emoji: Emoji = None,
-        user: MemberUser = None,
-        channel: discord.abc.Messageable = None,
-        guild: discord.Guild = None,
+        message: discord.PartialMessage = _NoValue,
+        emoji: Emoji = _NoValue,
+        user: MemberUser = _NoValue,
+        channel: discord.abc.Messageable = _NoValue,
+        guild: discord.Guild = _NoValue,
 
     ) -> EventContext:
         """Set the context values given."""
-        _ctx_message.set(message)
-        _ctx_emoji.set(emoji)
-        _ctx_user.set(user)
-        _ctx_channel.set(channel)
-        _ctx_guild.set(guild)
+        if message is not _NoValue:
+            _ctx_message.set(message)
+        if emoji is not _NoValue:
+            _ctx_emoji.set(emoji)
+        if user is not _NoValue:
+            _ctx_user.set(user)
+        if channel is not _NoValue:
+            _ctx_channel.set(channel)
+        if guild is not _NoValue:
+            _ctx_guild.set(guild)
         return self
 
     def set_event(self, event: str):
