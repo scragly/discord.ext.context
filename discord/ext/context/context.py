@@ -73,7 +73,7 @@ class EventContext:
         """The current message in context."""
         try:
             return _ctx_message.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.message`.")
 
@@ -82,7 +82,7 @@ class EventContext:
         """The current emoji in context."""
         try:
             return _ctx_emoji.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.emoji`.")
 
@@ -91,7 +91,7 @@ class EventContext:
         """The current user in context."""
         try:
             return _ctx_user.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.user`.")
 
@@ -100,7 +100,7 @@ class EventContext:
         """The current channel in context."""
         try:
             return _ctx_channel.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.channel`.")
 
@@ -109,7 +109,7 @@ class EventContext:
         """The current guild in context."""
         try:
             return _ctx_guild.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.guild`.")
 
@@ -118,7 +118,7 @@ class EventContext:
         """The current command context instance."""
         try:
             return _ctx_cmd.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"Only 'command' events will set the `ctx.cmd_ctx` value, not '{self.event}' event.")
 
@@ -127,7 +127,7 @@ class EventContext:
         """The current event in context."""
         try:
             return _ctx_event.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"EventContext has no origin event in the current call stack.")
 
@@ -136,7 +136,7 @@ class EventContext:
         """The current discord.py client in context."""
         try:
             return _ctx_client.get()
-        except KeyError:
+        except LookupError:
             with self.default(None):
                 raise ContextNotSet(f"Event '{self.event}' does not set a value for `ctx.client`.")
 
