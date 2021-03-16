@@ -125,3 +125,64 @@ async def show_name():
     if ctx.user:
         await ctx.channel.send(f"{ctx.user.display_name} did a thing.")
 ```
+
+## Events
+
+By default, the following events are hooked by EventContext:
+
+### Messages
+- `message`
+- `message_delete`
+- `message_edit`
+- `raw_message_delete`
+- `raw_message_edit`
+
+### Reactions
+- `reaction_add`
+- `reaction_remove`
+- `raw_reaction_add`
+- `raw_reaction_remove`
+- `reaction_clear`
+- `reaction_clear_emoji`
+- `raw_reaction_clear`
+- `raw_reaction_clear_emoji`
+
+### Channels
+- `typing`
+- `guild_channel_update`
+- `guild_channel_create`
+- `guild_channel_delete`
+- `guild_channel_pins_update`
+- `webhooks_update`
+
+### Guilds
+- `guild_update`
+- `guild_join`
+- `guild_remove`
+- `guild_integrations_update`
+- `guild_emojis_update`
+- `guild_available`
+- `guild_unavailable`
+
+### Members
+- `member_update`
+- `member_join`
+- `member_remove`
+- `member_ban_hook`
+- `member_unban_hook`
+
+### Roles
+- `guild_role_update_hook`
+- `guild_role_create_hook`
+- `guild_role_delete_hook`
+
+### Commands
+- `command`
+
+
+You can add more event hooks or replace the default ones with the decorator:
+```python
+@EventContext.register_hook(event_name)
+def event_hook(*args, **kwargs):
+    ...
+```
