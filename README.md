@@ -37,7 +37,7 @@ async def on_raw_reaction_add():
 
 ## Exceptions
 ### `ContextNotSet`
-Accessing a context value before it's set will have this exception raised. To have a fallback value, 
+Accessing a context value before it's set will have this exception raised. To have a fallback value used instead, use the contextmanager [`with ctx.default():`](https://github.com/scragly/discord.ext.context#ctxdefaultall_default--message_novalue-emoji_novalue-user_novalue-channel_novalue-guild_novalue-cmd_ext_novalue).
 
 ## Attributes
 
