@@ -62,6 +62,7 @@ def typing_hook(ctx: EventContext, channel: discord.abc.Messageable, user: Membe
 def reaction_hook(ctx: EventContext, reaction: discord.Reaction, user: discord.User):
     ctx.set(
         message=discord.PartialMessage(channel=reaction.message.channel, id=reaction.message.id),
+        emoji=reaction.emoji,
         user=ctx.ensure_member(user),
         channel=reaction.message.channel,
         guild=reaction.message.guild,
@@ -75,6 +76,7 @@ def raw_reaction_hook(ctx: EventContext, payload: discord.RawReactionActionEvent
     guild = ctx.client.get_guild(payload.guild_id) if payload.guild_id else None
     ctx.set(
         message=discord.PartialMessage(channel=channel, id=payload.message_id),
+        emoji=payload.emoji,
         user=ctx.ensure_member(payload.user_id, guild=guild),
         channel=channel,
         guild=guild,
@@ -85,6 +87,7 @@ def raw_reaction_hook(ctx: EventContext, payload: discord.RawReactionActionEvent
 def reaction_clear_hook(ctx: EventContext, message: discord.Message, _reaction: discord.Reaction):
     ctx.set(
         message=discord.PartialMessage(channel=message.channel, id=message.id),
+        emoji=_reaction.emoji,
         channel=message.channel,
         guild=message.guild,
     )
@@ -94,6 +97,7 @@ def reaction_clear_hook(ctx: EventContext, message: discord.Message, _reaction: 
 def reaction_clear_emoji_hook(ctx: EventContext, reaction: discord.Reaction):
     ctx.set(
         message=discord.PartialMessage(channel=reaction.message.channel, id=reaction.message.id),
+        emoji=reaction.emoji,
         channel=reaction.message.channel,
         guild=reaction.message.guild,
     )
@@ -116,6 +120,7 @@ def raw_reaction_clear_hook(ctx: EventContext, payload: discord.RawReactionClear
 @EventContext.register_hook("guild_channel_pins_update")
 @EventContext.register_hook("webhooks_update")
 def guild_channel_hook(ctx: EventContext, channel: discord.abc.GuildChannel, *_args):
+    # noinspection PyTypeChecker
     ctx.set(channel=channel, guild=channel.guild)
 
 
