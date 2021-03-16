@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import typing as t
 from contextlib import contextmanager
 
@@ -9,6 +10,9 @@ import discord
 from discord.ext import commands
 
 from .types import MemberUser, Emoji
+
+log = logging.getLogger(__name__)
+
 
 _ctx_message: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("message")
 _ctx_emoji: ContextVar[t.Optional[discord.PartialMessage]] = ContextVar("emoji")
@@ -216,22 +220,29 @@ class EventContext:
         guild_default = guild if guild is not _NoValue else all_default
         cmd_ext_default = cmd_ext if cmd_ext is not _NoValue else all_default
 
-        if (message_default is not _NoValue) and (_ctx_message.get(_NoValue) is not _NoValue):
+        if (message_default is not _NoValue) and (_ctx_message.get(_NoValue) is _NoValue):
+            log.debug(f"Default set: message = {message_default}")
             tokens[_ctx_message] = _ctx_message.set(message_default)
-        if (emoji_default is not _NoValue) and (_ctx_emoji.get(_NoValue) is not _NoValue):
+        if (emoji_default is not _NoValue) and (_ctx_emoji.get(_NoValue) is _NoValue):
+            log.debug(f"Default set: emoji = {emoji_default}")
             tokens[_ctx_emoji] = _ctx_emoji.set(emoji_default)
-        if (user_default is not _NoValue) and (_ctx_user.get(_NoValue) is not _NoValue):
+        if (user_default is not _NoValue) and (_ctx_user.get(_NoValue) is _NoValue):
+            log.debug(f"Default set: user = {user_default}")
             tokens[_ctx_user] = _ctx_user.set(self.ensure_member(user_default, guild=guild or self.guild))
-        if (channel_default is not _NoValue) and (_ctx_channel.get(_NoValue) is not _NoValue):
+        if (channel_default is not _NoValue) and (_ctx_channel.get(_NoValue) is _NoValue):
+            log.debug(f"Default set: channel = {channel_default}")
             tokens[_ctx_channel] = _ctx_channel.set(channel_default)
-        if (guild_default is not _NoValue) and (_ctx_guild.get(_NoValue) is not _NoValue):
+        if (guild_default is not _NoValue) and (_ctx_guild.get(_NoValue) is _NoValue):
+            log.debug(f"Default set: guild = {guild_default}")
             tokens[_ctx_guild] = _ctx_guild.set(guild_default)
-        if (cmd_ext_default is not _NoValue) and (_ctx_cmd.get(_NoValue) is not _NoValue):
+        if (cmd_ext_default is not _NoValue) and (_ctx_cmd.get(_NoValue) is _NoValue):
+            log.debug(f"Default set: cmd_ext = {cmd_ext_default}")
             tokens[_ctx_cmd] = _ctx_cmd.set(guild_default)
         try:
             yield
         finally:
             for ctx, token in tokens.items():
+                log.debug(f"Default reverted: {ctx.name}")
                 ctx.reset(token)
 
     @contextmanager
