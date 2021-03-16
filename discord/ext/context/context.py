@@ -266,7 +266,7 @@ class EventContext:
         if message is not _NoValue:
             tokens[_ctx_message] = _ctx_message.set(message)
         if emoji is not _NoValue:
-            tokens[_ctx_emoji] = _ctx_emoji.set(message)
+            tokens[_ctx_emoji] = _ctx_emoji.set(emoji)
         if user is not _NoValue:
             tokens[_ctx_user] = _ctx_user.set(self.ensure_member(user, guild=guild or self.guild))
         if channel is not _NoValue:
