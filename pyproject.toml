@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "discord.ext.context"
-version = "0.1.7"
+version = "0.1.8"
 description = "Globally accessable context for discord.py events."
 authors = ["scragly <29337040+scragly@users.noreply.github.com>"]
 license = "MIT"
@@ -22,7 +22,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
-"discord.py" = "^1.6.0"
+"discord.py" = ">=1.6.0"
 
 [tool.poetry.dev-dependencies]
 
